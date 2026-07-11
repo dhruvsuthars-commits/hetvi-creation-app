@@ -337,3 +337,12 @@ CREATE POLICY "Allow authenticated read/write movements" ON stock_movements FOR 
 CREATE POLICY "Allow authenticated read/write returns" ON returns FOR ALL TO authenticated USING (true);
 CREATE POLICY "Allow authenticated read/write return_items" ON return_items FOR ALL TO authenticated USING (true);
 CREATE POLICY "Allow authenticated read/write logs" ON audit_logs FOR ALL TO authenticated USING (true);
+
+-- 15. Sync Data Table
+CREATE TABLE IF NOT EXISTS sync_data (
+  id TEXT PRIMARY KEY,
+  data JSONB NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+ALTER TABLE sync_data ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public read/write sync_data" ON sync_data FOR ALL USING (true);

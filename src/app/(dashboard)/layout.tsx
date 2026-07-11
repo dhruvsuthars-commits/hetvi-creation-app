@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Shell from '@/components/layout/Shell';
+import { localDb } from '@/lib/supabase';
 
 export default function DashboardLayout({
   children,
@@ -20,7 +21,10 @@ export default function DashboardLayout({
         setIsAuthenticated(false);
         router.push('/login');
       } else {
-        setIsAuthenticated(true);
+        // Fetch latest data from cloud in background to keep data live
+        localDb.syncFromCloud().finally(() => {
+          setIsAuthenticated(true);
+        });
       }
     }
   }, [router]);

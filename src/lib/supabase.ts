@@ -15,6 +15,41 @@ class LocalDbService {
   private setStorageItem<T>(key: string, value: T): void {
     if (typeof window === 'undefined') return;
     localStorage.setItem(`hetvi_db_${key}`, JSON.stringify(value));
+    
+    // Auto-sync to cloud if config is present
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const keyToken = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (url && keyToken && supabase && key !== 'session') {
+      supabase
+        .from('sync_data')
+        .upsert({ id: key, data: value, updated_at: new Date().toISOString() })
+        .then(({ error }) => {
+          if (error) console.error(`Failed to sync ${key} to Supabase:`, error);
+        });
+    }
+  }
+
+  // Pull all tables from Supabase to local storage
+  async syncFromCloud(): Promise<boolean> {
+    if (typeof window === 'undefined') return false;
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const keyToken = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !keyToken || !supabase) return false;
+
+    try {
+      const { data, error } = await supabase
+        .from('sync_data')
+        .select('*');
+      if (data && !error) {
+        data.forEach((row: any) => {
+          localStorage.setItem(`hetvi_db_${row.id}`, JSON.stringify(row.data));
+        });
+        return true;
+      }
+    } catch (e) {
+      console.error("Failed to sync from Supabase:", e);
+    }
+    return false;
   }
 
   // Get active session profile
