@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
+import { db } from './firebase';
+import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
 
 // Environment variables check
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -16,10 +18,8 @@ class LocalDbService {
     if (typeof window === 'undefined') return;
     localStorage.setItem(`hetvi_db_${key}`, JSON.stringify(value));
     
-    // Auto-sync to cloud if config is present
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const keyToken = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (url && keyToken && supabase && key !== 'session') {
+    // Auto-sync to Supabase if config is present
+    if (supabaseUrl && supabaseAnonKey && supabase && key !== 'session') {
       supabase
         .from('sync_data')
         .upsert({ id: key, data: value, updated_at: new Date().toISOString() })
@@ -27,29 +27,56 @@ class LocalDbService {
           if (error) console.error(`Failed to sync ${key} to Supabase:`, error);
         });
     }
+
+    // Auto-sync to Firebase Firestore if config is present
+    if (db && key !== 'session') {
+      setDoc(doc(db, 'sync_data', key), {
+        id: key,
+        data: value,
+        updated_at: new Date().toISOString()
+      }).catch(err => console.error(`Failed to sync ${key} to Firebase Firestore:`, err));
+    }
   }
 
-  // Pull all tables from Supabase to local storage
+  // Pull all tables from cloud to local storage
   async syncFromCloud(): Promise<boolean> {
     if (typeof window === 'undefined') return false;
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const keyToken = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !keyToken || !supabase) return false;
+    let synced = false;
 
-    try {
-      const { data, error } = await supabase
-        .from('sync_data')
-        .select('*');
-      if (data && !error) {
-        data.forEach((row: any) => {
-          localStorage.setItem(`hetvi_db_${row.id}`, JSON.stringify(row.data));
-        });
-        return true;
+    // Pull from Supabase
+    if (supabaseUrl && supabaseAnonKey && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('sync_data')
+          .select('*');
+        if (data && !error) {
+          data.forEach((row: any) => {
+            localStorage.setItem(`hetvi_db_${row.id}`, JSON.stringify(row.data));
+          });
+          synced = true;
+        }
+      } catch (e) {
+        console.error("Failed to sync from Supabase:", e);
       }
-    } catch (e) {
-      console.error("Failed to sync from Supabase:", e);
     }
-    return false;
+
+    // Pull from Firebase Firestore
+    if (db) {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'sync_data'));
+        querySnapshot.forEach((docSnap) => {
+          const docData = docSnap.data();
+          if (docData && docData.data) {
+            localStorage.setItem(`hetvi_db_${docSnap.id}`, JSON.stringify(docData.data));
+          }
+        });
+        synced = true;
+      } catch (e) {
+        console.error("Failed to sync from Firebase Firestore:", e);
+      }
+    }
+
+    return synced;
   }
 
   // Get active session profile
