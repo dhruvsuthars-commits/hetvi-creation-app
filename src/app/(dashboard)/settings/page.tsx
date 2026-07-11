@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Save, Building, CreditCard, Receipt, Users, ShieldAlert, Check, Database } from 'lucide-react';
+import { Save, Building, CreditCard, Receipt, Users, ShieldAlert, Check, Database, Download, Upload } from 'lucide-react';
 import { localDb } from '@/lib/supabase';
 import { getStaffPermissions, saveStaffPermissions, UserPermission } from '@/lib/permissions';
 
@@ -141,6 +141,45 @@ export default function SettingsPage() {
     keysToClear.forEach(key => localStorage.removeItem(key));
 
     window.location.reload();
+  };
+
+  const handleExportData = () => {
+    const backup: Record<string, string> = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('hetvi_db_')) {
+        backup[key] = localStorage.getItem(key) || '';
+      }
+    }
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `hetvi_backup_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
+  const handleImportData = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileReader = new FileReader();
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    fileReader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target?.result as string);
+        Object.keys(parsed).forEach(key => {
+          if (key.startsWith('hetvi_db_')) {
+            localStorage.setItem(key, parsed[key]);
+          }
+        });
+        alert('Database imported successfully! The page will now reload.');
+        window.location.reload();
+      } catch (err) {
+        alert('Invalid backup file format!');
+      }
+    };
+    fileReader.readAsText(file);
   };
 
   const handlePermToggle = (perm: UserPermission) => {
@@ -511,31 +550,67 @@ export default function SettingsPage() {
               </div>
             )}
             {activeTab === 'backup' && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div className="border-b border-border pb-2">
-                  <h3 className="font-serif text-lg font-bold text-primary">Database & Seeder Controls</h3>
+                  <h3 className="font-serif text-lg font-bold text-primary">Database Backup & Porting</h3>
                 </div>
 
-                <div className="p-3 bg-secondary/10 border border-secondary/20 text-[#5A3828] text-xs rounded-lg">
-                  <span>Note: Loading demo data will seed sample products, customers, invoices, and payments to instantly test the platform.</span>
+                <div className="p-4 bg-secondary/15 border border-[#C98678]/25 text-[#5A3828] text-xs rounded-xl space-y-2">
+                  <p className="font-bold">How to move your local data to Vercel/Production:</p>
+                  <ol className="list-decimal pl-4 space-y-1">
+                    <li>Open this Settings page on your local computer and click <strong>"Export Local Database"</strong>.</li>
+                    <li>This will download a backup file containing all your local invoices, products, and customers.</li>
+                    <li>Open your online deployed Vercel app, go to Settings &rarr; Backup, and click <strong>"Import Database File"</strong> to upload the file.</li>
+                  </ol>
                 </div>
 
-                <div className="flex flex-wrap gap-4 pt-2">
-                  <button
-                    type="button"
-                    onClick={handleLoadDemoData}
-                    className="px-4 py-2.5 bg-accent text-accent-foreground text-xs font-semibold rounded-lg hover:brightness-105 transition-all shadow-sm"
-                  >
-                    Reset & Load Demo Data
-                  </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 bg-card border border-border rounded-xl space-y-3">
+                    <h4 className="font-serif font-bold text-sm text-primary">Export Backup</h4>
+                    <p className="text-[11px] text-muted-foreground">Download your entire local database (Invoices, Customers, Products, Payments) as a single JSON backup file.</p>
+                    <button
+                      type="button"
+                      onClick={handleExportData}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-accent text-accent-foreground text-xs font-semibold rounded-lg hover:brightness-105 transition-all shadow-sm cursor-pointer"
+                    >
+                      <Download className="w-4 h-4" /> Export Local Database
+                    </button>
+                  </div>
 
-                  <button
-                    type="button"
-                    onClick={handleClearAll}
-                    className="px-4 py-2.5 border border-red-200 text-red-600 text-xs font-semibold rounded-lg hover:bg-red-50 transition-all"
-                  >
-                    Clear All Records
-                  </button>
+                  <div className="p-4 bg-card border border-border rounded-xl space-y-3">
+                    <h4 className="font-serif font-bold text-sm text-primary">Import Backup</h4>
+                    <p className="text-[11px] text-muted-foreground">Upload a JSON backup file to overwrite/populate this browser's local database.</p>
+                    <label className="flex items-center justify-center gap-1.5 px-4 py-2 border border-accent text-accent text-xs font-semibold rounded-lg hover:bg-accent/5 transition-all cursor-pointer w-fit">
+                      <Upload className="w-4 h-4" /> Import Database File
+                      <input
+                        type="file"
+                        accept=".json"
+                        onChange={handleImportData}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="border-t border-border pt-4 space-y-3">
+                  <h4 className="font-serif font-bold text-sm text-[#5A3828]">Developer Seeder & Reset Controls</h4>
+                  <div className="flex flex-wrap gap-4">
+                    <button
+                      type="button"
+                      onClick={handleLoadDemoData}
+                      className="px-4 py-2 border border-border text-foreground hover:bg-muted/50 text-xs font-semibold rounded-lg transition-all"
+                    >
+                      Reset & Load Demo Data
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleClearAll}
+                      className="px-4 py-2 border border-red-200 text-red-600 text-xs font-semibold rounded-lg hover:bg-red-50 transition-all"
+                    >
+                      Clear All Records
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
