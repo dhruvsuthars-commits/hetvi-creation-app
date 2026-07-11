@@ -1,26 +1,209 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 35 60% 97%; /* #FBF7F1 */
+    --foreground: 19 33% 18%; /* #3F291F */
+    
+    --card: 37 100% 99%; /* #FFFDF9 */
+    --card-foreground: 19 33% 18%;
+    
+    --popover: 37 100% 99%;
+    --popover-foreground: 19 33% 18%;
+    
+    --primary: 19 39% 25%; /* #5A3828 */
+    --primary-foreground: 35 60% 97%;
+    
+    --secondary: 6 52% 69%; /* #D88E86 */
+    --secondary-foreground: 19 39% 25%;
+    
+    --muted: 26 27% 84%; /* #E6D5C8 */
+    --muted-foreground: 19 30% 36%; /* #765140 */
+    
+    --accent: 9 46% 63%; /* #C98678 */
+    --accent-foreground: 37 100% 99%;
+
+    --destructive: 0 60% 50%;
+    --destructive-foreground: 37 100% 99%;
+    
+    --border: 26 27% 84%;
+    --input: 26 27% 84%;
+    --ring: 9 46% 63%;
+    --radius: 0.75rem;
+
+    /* Custom brand absolute colors */
+    --brand-chocolate: #5A3828;
+    --brand-blush: #D88E86;
+    --brand-rosegold: #C98678;
+    --brand-peach: #E8B1A8;
+    --brand-cream: #FBF7F1;
+    --brand-ivory: #FFFDF9;
+    --brand-olive: #8C8A64;
+    --brand-beige: #E6D5C8;
+    --brand-pink-bg: #F8ECE8;
+    --brand-border: #765140;
+    --brand-text: #3F291F;
+
+    /* Locked Color Palette Variables */
+    --color-bg: #FFFDFA;
+    --color-surface: #FFFDFA;
+    --color-surface-soft: #FCF8F4;
+    --color-surface-muted: #F7F3EF;
+    --color-border: #E1D5CB;
+    --color-text-primary: #5A3928;
+    --color-text-muted: #765340;
+    --color-accent: #CB8275;
+    --color-accent-light: #D88E87;
+    --color-accent-blush: #F9ECE6;
+    --color-success: #00A63E;
+    --color-danger: #CC3233;
+  }
+
+  .dark {
+    --background: 19 39% 10%; /* #1F130D */
+    --foreground: 35 60% 97%; /* #FBF7F1 */
+    
+    --card: 19 39% 15%; /* #301E15 */
+    --card-foreground: 35 60% 97%;
+    
+    --popover: 19 39% 15%;
+    --popover-foreground: 35 60% 97%;
+    
+    --primary: 6 52% 69%; /* #D88E86 */
+    --primary-foreground: 19 39% 10%;
+    
+    --secondary: 9 46% 63%; /* #C98678 */
+    --secondary-foreground: 35 60% 97%;
+    
+    --muted: 19 30% 36%; /* #765140 */
+    --muted-foreground: 26 27% 84%; /* #E6D5C8 */
+    
+    --accent: 8 57% 79%; /* #E8B1A8 */
+    --accent-foreground: 19 39% 10%;
+    
+    --destructive: 0 60% 50%;
+    --destructive-foreground: 35 60% 97%;
+    
+    --border: 19 30% 36%;
+    --input: 19 30% 36%;
+    --ring: 8 57% 79%;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --font-sans: var(--font-poppins);
+  --font-serif: var(--font-playfair);
+
+  /* Locked Palette Colors */
+  --color-brand-bg: var(--color-bg);
+  --color-brand-surface: var(--color-surface);
+  --color-brand-surface-soft: var(--color-surface-soft);
+  --color-brand-surface-muted: var(--color-surface-muted);
+  --color-brand-border: var(--color-border);
+  --color-brand-text-primary: var(--color-text-primary);
+  --color-brand-text-muted: var(--color-text-muted);
+  --color-brand-accent: var(--color-accent);
+  --color-brand-accent-light: var(--color-accent-light);
+  --color-brand-accent-blush: var(--color-accent-blush);
+  --color-brand-success: var(--color-success);
+  --color-brand-danger: var(--color-danger);
 }
+
+body {
+  background: var(--brand-cream);
+  color: var(--brand-text);
+  min-height: 100vh;
+}
+
+.dark body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+@media print {
+  /* Force backgrounds, borders and graphics to print exactly */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Hide navigation, sidebars, headers, action buttons, overlays, and other print-hidden layout elements */
+  aside, header, footer, .print\:hidden, [class*="backdrop"], button, a {
+    display: none !important;
+  }
+
+  /* Constrain body and HTML for exact A4 rendering */
+  html, body {
+    width: 210mm !important;
+    height: 297mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
+    overflow: hidden !important;
+  }
+
+  /* Make sure the modal wrapper fits the printed page */
+  .fixed.inset-0.z-50 {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+  }
+
+  .print\:absolute {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    max-height: 297mm !important;
+    margin: 0 !important;
+    padding: 12mm !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+    color: black !important;
+    box-sizing: border-box !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 0 !important;
+  }
+}
+
+

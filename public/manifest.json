@@ -1,0 +1,21 @@
+{
+  "name": "Hetvi's Creation — Invoice & Stock Portal",
+  "short_name": "Hetvi's Creation",
+  "description": "Premium Online Invoice, Stock and Payment Management Studio",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#FBF7F1",
+  "theme_color": "#5A3828",
+  "icons": [
+    {
+      "src": "/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
