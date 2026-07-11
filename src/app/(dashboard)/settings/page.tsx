@@ -182,6 +182,27 @@ export default function SettingsPage() {
     fileReader.readAsText(file);
   };
 
+  const handlePushToCloud = async () => {
+    const confirm = window.confirm("This will upload all your local invoices, products, and customers from this computer to your online database. Proceed?");
+    if (!confirm) return;
+
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('hetvi_db_')) {
+          const cleanKey = key.replace('hetvi_db_', '');
+          if (cleanKey !== 'session') {
+            const val = JSON.parse(localStorage.getItem(key) || '[]');
+            await localDb.syncToCloud(cleanKey, val);
+          }
+        }
+      }
+      alert("All local data has been successfully uploaded to the cloud! You can now check it on your deployed Vercel app.");
+    } catch (e) {
+      alert("Failed to upload data to cloud. Please check your internet connection.");
+    }
+  };
+
   const handlePermToggle = (perm: UserPermission) => {
     let updated: UserPermission[];
     if (staffPerms.includes(perm)) {
@@ -589,6 +610,18 @@ export default function SettingsPage() {
                         className="hidden"
                       />
                     </label>
+                  </div>
+
+                  <div className="p-4 bg-[#FBF7F1] border border-[#C98678]/30 rounded-xl space-y-3 sm:col-span-2">
+                    <h4 className="font-serif font-bold text-sm text-[#5A3828]">Push Local Data to Firebase Cloud</h4>
+                    <p className="text-[11px] text-muted-foreground">If you are running this app locally on your computer (with your invoices and customers visible), click this button to push all of it directly to your online Firebase Firestore database. This populates your live Vercel app instantly!</p>
+                    <button
+                      type="button"
+                      onClick={handlePushToCloud}
+                      className="flex items-center gap-1.5 px-4 py-2.5 bg-accent text-accent-foreground text-xs font-semibold rounded-lg hover:brightness-105 transition-all shadow-sm cursor-pointer"
+                    >
+                      <Upload className="w-4 h-4" /> Push Local Data to Cloud Database
+                    </button>
                   </div>
                 </div>
 

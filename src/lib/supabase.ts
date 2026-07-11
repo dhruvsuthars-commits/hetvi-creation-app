@@ -38,6 +38,31 @@ class LocalDbService {
     }
   }
 
+  // Push single table to cloud database
+  async syncToCloud(key: string, value: any): Promise<void> {
+    if (supabaseUrl && supabaseAnonKey && supabase && key !== 'session') {
+      try {
+        await supabase
+          .from('sync_data')
+          .upsert({ id: key, data: value, updated_at: new Date().toISOString() });
+      } catch (e) {
+        console.error(`Failed to sync ${key} to Supabase:`, e);
+      }
+    }
+
+    if (db && key !== 'session') {
+      try {
+        await setDoc(doc(db, 'sync_data', key), {
+          id: key,
+          data: value,
+          updated_at: new Date().toISOString()
+        });
+      } catch (e) {
+        console.error(`Failed to sync ${key} to Firebase Firestore:`, e);
+      }
+    }
+  }
+
   // Pull all tables from cloud to local storage
   async syncFromCloud(): Promise<boolean> {
     if (typeof window === 'undefined') return false;
