@@ -198,7 +198,9 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         
         {/* Top Header bar */}
-        <header className="h-16 border-b border-border bg-card flex items-center justify-between px-4 z-10 shadow-sm flex-shrink-0 print:hidden">
+        <header className={`h-16 border-b border-border bg-card flex items-center justify-between px-4 z-10 shadow-sm flex-shrink-0 print:hidden transition-all duration-300 ${
+          isMobileMode ? 'max-w-[480px] w-full mx-auto border-x border-border' : ''
+        }`}>
           <div className="flex items-center gap-3">
             {/* Mobile menu trigger */}
             <button 
@@ -208,13 +210,13 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               <Menu className="w-6 h-6" />
             </button>
             
-            <h1 className="font-serif font-semibold text-lg md:text-xl text-primary flex items-center gap-2">
+            <h1 className="font-serif font-semibold text-sm md:text-xl text-primary flex items-center gap-1.5">
               <img 
                 src="/logo.png" 
                 alt="Hetvi's Creation Logo"
-                className="w-8 h-8 rounded-full object-cover border border-accent shadow-sm"
+                className="w-7 h-7 rounded-full object-cover border border-accent shadow-sm flex-shrink-0"
               />
-              Hetvi's Creation
+              <span className="hidden min-[380px]:inline">Hetvi's Creation</span>
             </h1>
           </div>
 
