@@ -206,4 +206,51 @@ body {
   }
 }
 
+/* --- Mobile View Simulation CSS Overrides --- */
+
+/* Reset grid columns to single stack inside simulated mobile view */
+.mobile-mode .grid-cols-2,
+.mobile-mode .grid-cols-3,
+.mobile-mode .grid-cols-4,
+.mobile-mode .md\:grid-cols-2,
+.mobile-mode .md\:grid-cols-3,
+.mobile-mode .md\:grid-cols-4,
+.mobile-mode .lg\:grid-cols-2,
+.mobile-mode .lg\:grid-cols-3,
+.mobile-mode .lg\:grid-cols-4 {
+  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+}
+
+/* Force layout grid item spans to single columns */
+.mobile-mode .lg\:col-span-2,
+.mobile-mode .lg\:col-span-3,
+.mobile-mode .md\:col-span-2 {
+  grid-column: span 1 / span 1 !important;
+}
+
+/* Adjust card paddings and flex configurations in mobile mode */
+.mobile-mode .flex.flex-row,
+.mobile-mode .md\:flex-row {
+  flex-direction: column !important;
+}
+
+.mobile-mode .p-6 {
+  padding: 1rem !important;
+}
+
+.mobile-mode .gap-6 {
+  gap: 1rem !important;
+}
+
+/* Optimize text sizes for simulated mobile screen values to prevent overlaps */
+.mobile-mode h3,
+.mobile-mode h3.text-xl,
+.mobile-mode h3.text-2xl,
+.mobile-mode h3.text-3xl,
+.mobile-mode .text-xl,
+.mobile-mode .text-2xl,
+.mobile-mode .text-3xl {
+  font-size: 1.125rem !important; /* scale down font to text-lg */
+}
+
 
