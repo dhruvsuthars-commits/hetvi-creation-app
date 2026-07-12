@@ -20,8 +20,8 @@ export default function LoginPage() {
 
     let userEmail = email;
     let userPassword = password;
-    let name = 'Hetvi Suthar (Owner)';
-    let role = 'ADMIN';
+    const name = 'Hetvi Suthar (Owner)';
+    const role = 'ADMIN';
 
     if (selectedRole === 'ADMIN') {
       userEmail = 'admin@hetvicreation.com';

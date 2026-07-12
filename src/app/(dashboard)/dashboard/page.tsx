@@ -140,7 +140,7 @@ export default function DashboardPage() {
       else if (inv.payment_status === 'Unpaid') unpaidCount++;
     });
 
-    const totalReceived = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+    const totalReceived = totalSales - totalPending;
     const lowStockCount = products.filter(p => p.current_stock <= p.min_stock && p.current_stock > 0).length;
     const outStockCount = products.filter(p => p.current_stock === 0).length;
 
@@ -304,9 +304,9 @@ export default function DashboardPage() {
           whileHover={{ y: -3, borderColor: '#C98678', boxShadow: '0 4px 12px rgba(201,134,120,0.12)' }}
           className="p-4 rounded-xl bg-card border border-border shadow-sm flex flex-col justify-between transition-all duration-300 min-h-[100px]"
         >
-          <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">This Month's Sales</span>
-          <h3 className="font-serif font-extrabold text-xl text-primary mt-2">
-            ₹{mounted ? <AnimatedCounter value={stats.monthSales} /> : stats.monthSales.toFixed(2)}
+          <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Total Sales</span>
+          <h3 className="font-serif font-extrabold text-xl text-stone-850 mt-2">
+            ₹{mounted ? <AnimatedCounter value={stats.totalSales} /> : stats.totalSales.toFixed(2)}
           </h3>
         </motion.div>
 
@@ -314,9 +314,9 @@ export default function DashboardPage() {
           whileHover={{ y: -3, borderColor: '#C98678', boxShadow: '0 4px 12px rgba(201,134,120,0.12)' }}
           className="p-4 rounded-xl bg-card border border-border shadow-sm flex flex-col justify-between transition-all duration-300 min-h-[100px]"
         >
-          <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Total Sales</span>
+          <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Paid Amount</span>
           <h3 className="font-serif font-extrabold text-xl text-[#8C8A64] mt-2">
-            ₹{mounted ? <AnimatedCounter value={stats.totalSales} /> : stats.totalSales.toFixed(2)}
+            ₹{mounted ? <AnimatedCounter value={stats.totalReceived} /> : stats.totalReceived.toFixed(2)}
           </h3>
         </motion.div>
 

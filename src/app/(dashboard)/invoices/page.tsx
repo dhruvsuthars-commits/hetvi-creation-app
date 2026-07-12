@@ -160,7 +160,44 @@ export default function InvoicesPage() {
     const tryDownload = (attempts = 0) => {
       const element = document.getElementById("print-invoice-content");
       if (element) {
-        const triggerDownload = () => {
+        // Temporarily intercept getComputedStyle to prevent html2canvas from crashing on modern oklch/lab colors
+        const originalGetComputedStyle = window.getComputedStyle;
+        window.getComputedStyle = function(el, pseudoElt) {
+          const style = originalGetComputedStyle(el, pseudoElt);
+          return new Proxy(style, {
+            get(target, prop) {
+              const val = Reflect.get(target, prop);
+              if (typeof val === 'function') {
+                return val.bind(target);
+              }
+              if (typeof val === 'string' && (val.includes('oklch(') || val.includes('oklab(') || val.includes('lab('))) {
+                // Parse the lightness (L) value from the color function to determine correct contrast fallback
+                return val.replace(/(?:oklch|oklab|lab)\(\s*([\d\.\%]+)[^)]*\)/gi, (match, lVal) => {
+                  let l = parseFloat(lVal);
+                  if (lVal.includes('%')) {
+                    l = l / 100;
+                  }
+                  if (l > 1) {
+                    l = l / 100; // Normalize 0-100 scale to 0-1
+                  }
+                  
+                  if (l >= 0.75) {
+                    return 'rgb(250, 248, 245)'; // Soft light background
+                  } else if (l >= 0.5) {
+                    return 'rgb(201, 134, 120)'; // Brand accent color
+                  } else {
+                    return 'rgb(90, 56, 40)'; // Brand dark brown/text
+                  }
+                });
+              }
+              return val;
+            }
+          });
+        };
+
+        // @ts-ignore
+        import('html2pdf.js').then((html2pdfModule) => {
+          const html2pdf = html2pdfModule.default;
           const opt = {
             margin:       [10, 10, 10, 10],
             filename:     `${inv.invoice_no}.pdf`,
@@ -168,19 +205,18 @@ export default function InvoicesPage() {
             html2canvas:  { scale: 2, useCORS: true },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
           };
-          // @ts-ignore
-          window.html2pdf().from(element).set(opt).save();
-        };
-
-        // @ts-ignore
-        if (window.html2pdf) {
-          triggerDownload();
-        } else {
-          const script = document.createElement("script");
-          script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
-          script.onload = triggerDownload;
-          document.body.appendChild(script);
-        }
+          
+          html2pdf().from(element).set(opt as any).save().then(() => {
+            // Restore original getComputedStyle
+            window.getComputedStyle = originalGetComputedStyle;
+          }).catch((err: any) => {
+            console.error("PDF generation failed:", err);
+            window.getComputedStyle = originalGetComputedStyle;
+          });
+        }).catch((err) => {
+          console.error("Failed to load html2pdf.js dynamically:", err);
+          window.getComputedStyle = originalGetComputedStyle;
+        });
       } else if (attempts < 10) {
         setTimeout(() => tryDownload(attempts + 1), 100);
       }
@@ -360,7 +396,7 @@ export default function InvoicesPage() {
       {/* Full Screen Branded A4 Invoice Preview Modal */}
       <AnimatePresence>
         {selectedInvoice && (
-          <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 print:p-0 print:absolute print:inset-0 print:bg-white">
+          <div className="fixed inset-0 z-50 overflow-y-auto flex items-start justify-center p-4 py-8 md:py-16 print:p-0 print:absolute print:inset-0 print:bg-white">
             
             {/* Backdrop - Hidden during print */}
             <motion.div
@@ -379,30 +415,18 @@ export default function InvoicesPage() {
               className="relative bg-white text-stone-900 w-full max-w-4xl min-h-[297mm] p-8 md:p-12 shadow-2xl rounded-2xl print:shadow-none print:rounded-none print:p-0 print:w-full print:absolute z-10"
             >
               
-              {/* Modal controls - Hidden during print */}
-              <div className="absolute top-4 right-4 flex items-center gap-2 print:hidden">
-                <Link
-                  href={`/invoices/edit/${selectedInvoice.id}`}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 bg-white text-stone-700 text-xs font-semibold shadow-sm hover:bg-stone-50"
-                >
-                  <Edit className="w-4 h-4" /> Edit Invoice
-                </Link>
-                <button
-                  onClick={() => handleDownloadPdf(selectedInvoice)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-accent-foreground text-xs font-semibold shadow-sm hover:brightness-105"
-                >
-                  <Download className="w-4 h-4" /> Download PDF
-                </button>
+              {/* Top Close icon - Hidden during print */}
+              <div className="absolute top-4 right-4 print:hidden">
                 <button
                   onClick={() => setSelectedInvoice(null)}
-                  className="p-1.5 bg-stone-100 hover:bg-stone-200 rounded-full"
+                  className="p-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-full transition-all"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Digitalized Invoice Template Layout - Designed exactly from excel */}
-              <div id="print-invoice-content" className="w-full flex flex-col bg-white">
+              <div id="print-invoice-content" className="w-full flex flex-col bg-white pb-16">
                   
                   {/* Brand Header */}
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b-2 border-[#C98678] pb-6">
@@ -535,7 +559,7 @@ export default function InvoicesPage() {
                       {selectedInvoice.payment_mode && (
                         <div className="flex justify-between items-center text-stone-500 pt-1 text-[10px]">
                           <span>Payment Mode:</span>
-                          <span className="font-bold text-accent px-1.5 py-0.5 bg-secondary/20 rounded border border-accent/15 uppercase text-[9px] tracking-wider">{selectedInvoice.payment_mode}</span>
+                          <span className="font-bold px-1.5 py-0.5 rounded border uppercase text-[9px] tracking-wider" style={{ backgroundColor: '#F9ECE6', color: '#CB8275', borderColor: 'rgba(203, 130, 117, 0.2)' }}>{selectedInvoice.payment_mode}</span>
                         </div>
                       )}
 
@@ -548,6 +572,28 @@ export default function InvoicesPage() {
                   </div>
                 </div>
 
+              </div>
+
+              {/* Bottom Actions - Hidden during print */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8 pt-6 border-t border-stone-100 print:hidden">
+                <button
+                  onClick={() => setSelectedInvoice(null)}
+                  className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700 text-sm font-semibold shadow-sm transition-all"
+                >
+                  <X className="w-4 h-4" /> Close Preview
+                </button>
+                <Link
+                  href={`/invoices/edit/${selectedInvoice.id}`}
+                  className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-700 text-sm font-semibold shadow-sm hover:bg-stone-50 transition-all text-stone-800"
+                >
+                  <Edit className="w-4 h-4" /> Edit Invoice
+                </Link>
+                <button
+                  onClick={() => handleDownloadPdf(selectedInvoice)}
+                  className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-accent text-accent-foreground text-sm font-semibold shadow-sm hover:brightness-105 transition-all"
+                >
+                  <Download className="w-4 h-4" /> Download PDF
+                </button>
               </div>
 
             </motion.div>

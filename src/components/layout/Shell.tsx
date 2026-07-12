@@ -37,6 +37,9 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isMoreSheetOpen, setIsMoreSheetOpen] = useState(false);
+  const [isQuickActionOpen, setIsQuickActionOpen] = useState(false);
+  const [logoError, setLogoError] = useState(false);
 
   // Load session & notifications
   useEffect(() => {
@@ -111,11 +114,18 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       >
         {/* Brand Logo Header */}
         <div className="h-16 flex items-center px-4 border-b border-border gap-3">
-          <img 
-            src="/logo.png" 
-            alt="Hetvi's Creation Logo"
-            className="w-8 h-8 rounded-full flex-shrink-0 object-cover border border-accent shadow-sm"
-          />
+          {!logoError ? (
+            <img 
+              src="/logo.png" 
+              alt="Hetvi's Creation Logo"
+              onError={() => setLogoError(true)}
+              className="w-8 h-8 rounded-full flex-shrink-0 object-cover border border-accent shadow-sm"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-accent border border-accent shadow-sm flex-shrink-0">
+              <Sparkles className="w-5 h-5" />
+            </div>
+          )}
           {!isSidebarCollapsed && (
             <motion.div 
               initial={{ opacity: 0 }}
@@ -202,27 +212,26 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           isMobileMode ? 'max-w-[480px] w-full mx-auto border-x border-border' : ''
         }`}>
           <div className="flex items-center gap-3">
-            {/* Mobile menu trigger */}
-            <button 
-              onClick={() => setIsMobileOpen(true)}
-              className="md:hidden p-2 rounded-lg hover:bg-muted transition-all"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
-            
             <h1 className="font-serif font-semibold text-sm md:text-xl text-primary flex items-center gap-1.5">
-              <img 
-                src="/logo.png" 
-                alt="Hetvi's Creation Logo"
-                className="w-7 h-7 rounded-full object-cover border border-accent shadow-sm flex-shrink-0"
-              />
-              <span className="hidden min-[380px]:inline">Hetvi's Creation</span>
+              {!logoError ? (
+                <img 
+                  src="/logo.png" 
+                  alt="Hetvi's Creation Logo"
+                  onError={() => setLogoError(true)}
+                  className="w-7 h-7 rounded-full object-cover border border-accent shadow-sm flex-shrink-0"
+                />
+              ) : (
+                <div className="w-7 h-7 rounded-full bg-accent/20 flex items-center justify-center text-accent border border-accent shadow-sm flex-shrink-0">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+              )}
+              <span>Hetvi's Creation</span>
             </h1>
           </div>
 
           <div className="flex items-center gap-4">
             {/* Notification Dropdown Container */}
-             <div className="relative">
+            <div className="relative">
               <button 
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="p-2 rounded-full hover:bg-muted transition-all relative cursor-pointer"
@@ -319,89 +328,217 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         {/* Main Content Workspace */}
         <main className={`flex-1 overflow-y-auto bg-background p-4 md:p-6 custom-scrollbar print:p-0 print:bg-white transition-all duration-300 ${
           isMobileMode 
-            ? 'max-w-[480px] w-full mx-auto border-x border-border shadow-2xl relative bg-card my-4 rounded-3xl min-h-[calc(100vh-8rem)]' 
-            : ''
+            ? 'max-w-[480px] w-full mx-auto border-x border-border shadow-2xl relative bg-card mt-4 mb-0 rounded-t-3xl min-h-[calc(100vh-8rem)] pb-24' 
+            : 'pb-24 md:pb-6'
         }`}>
           {children}
         </main>
+
+        {/* Mobile Bottom Tab Bar */}
+        <div className={`md:hidden bg-card border-t border-border py-2 px-6 flex justify-between items-center z-20 print:hidden ${
+          isMobileMode ? 'max-w-[480px] w-full mx-auto border-x border-border rounded-b-3xl mb-4 shadow-xl' : 'fixed bottom-0 left-0 right-0'
+        }`}>
+          {/* Dashboard Tab */}
+          <Link href="/dashboard" className={`flex flex-col items-center gap-1 cursor-pointer transition-all ${pathname === '/dashboard' ? 'text-accent scale-105 font-semibold' : 'text-muted-foreground hover:text-foreground'}`}>
+            <LayoutDashboard className="w-5 h-5" />
+            <span className="text-[10px] font-medium">Home</span>
+          </Link>
+          
+          {/* Invoices Tab */}
+          <Link href="/invoices" className={`flex flex-col items-center gap-1 cursor-pointer transition-all ${pathname.startsWith('/invoices') && pathname !== '/invoices/create' ? 'text-accent scale-105 font-semibold' : 'text-muted-foreground hover:text-foreground'}`}>
+            <FileText className="w-5 h-5" />
+            <span className="text-[10px] font-medium">Invoices</span>
+          </Link>
+
+          {/* Quick Action Floating Tab */}
+          <div className="relative -mt-6">
+            <button 
+              onClick={() => setIsQuickActionOpen(!isQuickActionOpen)}
+              className="w-12 h-12 rounded-full bg-accent text-accent-foreground flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all cursor-pointer border-4 border-card"
+            >
+              <Plus className={`w-6 h-6 transition-transform duration-300 ${isQuickActionOpen ? 'rotate-45' : ''}`} />
+            </button>
+          </div>
+
+          {/* Customers Tab */}
+          <Link href="/customers" className={`flex flex-col items-center gap-1 cursor-pointer transition-all ${pathname.startsWith('/customers') ? 'text-accent scale-105 font-semibold' : 'text-muted-foreground hover:text-foreground'}`}>
+            <Users className="w-5 h-5" />
+            <span className="text-[10px] font-medium">Customers</span>
+          </Link>
+
+          {/* More Tab */}
+          <button 
+            onClick={() => setIsMoreSheetOpen(true)}
+            className={`flex flex-col items-center gap-1 cursor-pointer transition-all ${isMoreSheetOpen ? 'text-accent scale-105 font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            <Menu className="w-5 h-5" />
+            <span className="text-[10px] font-medium">More</span>
+          </button>
+        </div>
       </div>
 
-      {/* Mobile Drawer Navigation Backdrop */}
+      {/* Mobile Quick Action Overlay Menu */}
       <AnimatePresence>
-        {isMobileOpen && (
+        {isQuickActionOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.4 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsQuickActionOpen(false)}
+              className="fixed inset-0 bg-black z-40 md:hidden"
+            />
+            <motion.div 
+              initial={{ opacity: 0, y: 50, scale: 0.9, x: '-50%' }}
+              animate={{ opacity: 1, y: 0, scale: 1, x: '-50%' }}
+              exit={{ opacity: 0, y: 50, scale: 0.9, x: '-50%' }}
+              className={`fixed z-50 md:hidden bg-card border border-border p-4 rounded-2xl shadow-2xl flex flex-col gap-3 left-1/2 bottom-20 w-[90%] max-w-[340px]`}
+            >
+              <h3 className="text-sm font-semibold text-center pb-2 border-b border-border text-primary font-serif">Quick Actions</h3>
+              <Link 
+                href="/invoices/create" 
+                onClick={() => setIsQuickActionOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-all cursor-pointer text-foreground"
+              >
+                <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center text-accent">
+                  <Plus className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">New Invoice</span>
+                  <span className="text-[10px] text-muted-foreground">Create a fresh sales bill</span>
+                </div>
+              </Link>
+              <Link 
+                href="/customers" 
+                onClick={() => setIsQuickActionOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-all cursor-pointer text-foreground"
+              >
+                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
+                  <Users className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">Add Customer</span>
+                  <span className="text-[10px] text-muted-foreground">Add to client directory</span>
+                </div>
+              </Link>
+              <Link 
+                href="/products" 
+                onClick={() => setIsQuickActionOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-all cursor-pointer text-foreground"
+              >
+                <div className="w-8 h-8 rounded-lg bg-[#E8B1A8]/20 flex items-center justify-center text-[#5A3828]">
+                  <ShoppingBag className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">Add Product</span>
+                  <span className="text-[10px] text-muted-foreground">Register new catalog item</span>
+                </div>
+              </Link>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile More Sheets Navigation */}
+      <AnimatePresence>
+        {isMoreSheetOpen && (
           <>
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
               exit={{ opacity: 0 }}
-              onClick={() => setIsMobileOpen(false)}
-              className="fixed inset-0 bg-black z-30 md:hidden"
+              onClick={() => setIsMoreSheetOpen(false)}
+              className="fixed inset-0 bg-black/60 z-40 md:hidden"
             />
-            <motion.aside 
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-64 bg-card border-r border-border shadow-xl z-40 flex flex-col md:hidden"
+            <motion.div 
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              className={`fixed bottom-0 left-0 right-0 z-50 md:hidden bg-card border-t border-border rounded-t-3xl shadow-2xl p-6 pb-8 flex flex-col gap-4 ${
+                isMobileMode ? 'max-w-[480px] mx-auto border-x' : ''
+              }`}
             >
-              <div className="h-16 flex items-center justify-between px-4 border-b border-border">
+              <div className="w-12 h-1.5 rounded-full bg-muted mx-auto -mt-2 mb-2 cursor-pointer" onClick={() => setIsMoreSheetOpen(false)} />
+              
+              <div className="flex justify-between items-center mb-2">
                 <div className="flex items-center gap-2">
-                  <img 
-                    src="/logo.png" 
-                    alt="Hetvi's Creation Logo"
-                    className="w-8 h-8 rounded-full object-cover border border-accent shadow-sm"
-                  />
-                  <span className="font-serif font-bold text-primary">Hetvi's Creation</span>
+                  {!logoError ? (
+                    <img 
+                      src="/logo.png" 
+                      onError={() => setLogoError(true)}
+                      className="w-7 h-7 rounded-full object-cover" 
+                      alt="Logo" 
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-accent/20 flex items-center justify-center text-accent border border-accent shadow-sm flex-shrink-0">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                  )}
+                  <span className="font-serif font-bold text-primary text-lg">Hetvi's Creation</span>
                 </div>
                 <button 
-                  onClick={() => setIsMobileOpen(false)}
-                  className="p-2 rounded-lg hover:bg-muted"
+                  onClick={() => setIsMoreSheetOpen(false)}
+                  className="p-2 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground transition-all"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <nav className="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar">
-                {navigationItems.map((item) => {
-                  const isActive = pathname === item.href;
+              <div className="grid grid-cols-3 gap-4">
+                {[
+                  { name: 'Products', href: '/products', icon: ShoppingBag },
+                  { name: 'Payments', href: '/payments', icon: CreditCard },
+                  { name: 'Returns', href: '/returns', icon: RefreshCw },
+                  { name: 'Reports', href: '/reports', icon: BarChart2 },
+                  { name: 'Trash', href: '/trash', icon: Trash2 },
+                  { name: 'Settings', href: '/settings', icon: Settings },
+                ].map((item) => {
                   const Icon = item.icon;
-                  
+                  const isActive = pathname === item.href;
                   return (
                     <Link
                       key={item.name}
                       href={item.href}
-                      onClick={() => setIsMobileOpen(false)}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                      onClick={() => setIsMoreSheetOpen(false)}
+                      className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all ${
                         isActive 
-                          ? 'bg-secondary/20 text-accent font-semibold border-l-2 border-accent' 
-                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                          ? 'bg-accent/15 border-accent text-accent' 
+                          : 'border-border bg-muted/35 hover:bg-muted text-muted-foreground'
                       }`}
                     >
-                      <Icon className="w-5 h-5 flex-shrink-0" />
-                      <span>{item.name}</span>
+                      <Icon className="w-6 h-6" />
+                      <span className="text-xs font-medium text-center">{item.name}</span>
                     </Link>
                   );
                 })}
-              </nav>
+              </div>
 
-              <div className="p-3 border-t border-border space-y-1 flex-shrink-0">
+              <div className="h-[1px] bg-border my-2" />
+
+              <div className="flex gap-3">
                 <button
-                  onClick={toggleTheme}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted transition-all"
+                  onClick={() => {
+                    toggleTheme();
+                    setIsMoreSheetOpen(false);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-border bg-muted/20 hover:bg-muted text-sm font-medium transition-all"
                 >
-                  {isDarkTheme ? <Sun className="w-5 h-5 text-accent" /> : <Moon className="w-5 h-5 text-primary" />}
-                  <span>{isDarkTheme ? 'Light Theme' : 'Dark Theme'}</span>
+                  {isDarkTheme ? <Sun className="w-4 h-4 text-accent" /> : <Moon className="w-4 h-4 text-primary" />}
+                  <span>{isDarkTheme ? 'Light Mode' : 'Dark Mode'}</span>
                 </button>
-                
                 <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-all"
+                  onClick={() => {
+                    handleLogout();
+                    setIsMoreSheetOpen(false);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-destructive/20 bg-destructive/5 hover:bg-destructive/10 text-destructive text-sm font-medium transition-all"
                 >
-                  <LogOut className="w-5 h-5" />
+                  <LogOut className="w-4 h-4" />
                   <span>Logout</span>
                 </button>
               </div>
-            </motion.aside>
+            </motion.div>
           </>
         )}
       </AnimatePresence>
