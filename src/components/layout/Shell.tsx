@@ -9,7 +9,7 @@ import {
   Layers, CreditCard, Truck, RefreshCw, BarChart2, 
   Bell, Settings, FileSpreadsheet, Trash2, Menu, X, 
   ChevronLeft, ChevronRight, LogOut, Sun, Moon, Plus,
-  Sparkles
+  Sparkles, Smartphone, Monitor
 } from 'lucide-react';
 import { localDb } from '@/lib/supabase';
 
@@ -33,12 +33,19 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const [isMobileMode, setIsMobileMode] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
 
   // Load session & notifications
   useEffect(() => {
+    // Load mobile mode simulator configuration
+    const storedMobileMode = localStorage.getItem('isMobileMode');
+    if (storedMobileMode === 'true') {
+      setIsMobileMode(true);
+    }
+
     // Set default theme from system or preference
     const storedTheme = localStorage.getItem('theme');
     if (storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -73,6 +80,12 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       localStorage.setItem('theme', 'dark');
       setIsDarkTheme(true);
     }
+  };
+
+  const toggleMobileMode = () => {
+    const nextMode = !isMobileMode;
+    setIsMobileMode(nextMode);
+    localStorage.setItem('isMobileMode', nextMode ? 'true' : 'false');
   };
 
   const handleLogout = () => {
@@ -269,6 +282,25 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               </AnimatePresence>
             </div>
 
+            {/* Mobile Mode Simulator Toggle */}
+            <button 
+              onClick={toggleMobileMode}
+              title={isMobileMode ? "Switch to Desktop View" : "Switch to Mobile View"}
+              className="p-2 rounded-full hover:bg-muted transition-all text-muted-foreground hover:text-foreground cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              {isMobileMode ? (
+                <>
+                  <Monitor className="w-4 h-4" />
+                  <span className="hidden sm:inline text-xs font-semibold text-[#5A3828]">Desktop View</span>
+                </>
+              ) : (
+                <>
+                  <Smartphone className="w-4 h-4" />
+                  <span className="hidden sm:inline text-xs font-semibold text-[#5A3828]">Mobile View</span>
+                </>
+              )}
+            </button>
+
             {/* Profile info */}
             <div className="flex items-center gap-2">
               <motion.div 
@@ -283,7 +315,11 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Main Content Workspace */}
-        <main className="flex-1 overflow-y-auto bg-background p-4 md:p-6 custom-scrollbar print:p-0 print:bg-white">
+        <main className={`flex-1 overflow-y-auto bg-background p-4 md:p-6 custom-scrollbar print:p-0 print:bg-white transition-all duration-300 ${
+          isMobileMode 
+            ? 'max-w-[480px] w-full mx-auto border-x border-border shadow-2xl relative bg-card my-4 rounded-3xl min-h-[calc(100vh-8rem)]' 
+            : ''
+        }`}>
           {children}
         </main>
       </div>
