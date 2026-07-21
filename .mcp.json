@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "next-devtools": {
+      "command": "/Users/mac/Library/CloudStorage/GoogleDrive-dhruvsuthars@gmail.com/My Drive/Hetvi Creation/APP/node_modules/.bin/next-devtools-mcp",
+      "args": [],
+      "env": {
+        "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+      }
+    }
+  }
+}

@@ -9,7 +9,7 @@ import {
   Layers, CreditCard, Truck, RefreshCw, BarChart2, 
   Bell, Settings, FileSpreadsheet, Trash2, Menu, X, 
   ChevronLeft, ChevronRight, LogOut, Sun, Moon, Plus,
-  Sparkles, Smartphone, Monitor
+  Sparkles, Smartphone, Monitor, TrendingUp
 } from 'lucide-react';
 import { localDb } from '@/lib/supabase';
 
@@ -19,6 +19,7 @@ const navigationItems = [
   { name: 'Create Invoice', href: '/invoices/create', icon: Plus, isAction: true },
   { name: 'Invoices', href: '/invoices', icon: FileText },
   { name: 'Customers', href: '/customers', icon: Users },
+  { name: 'Sales & Expenses', href: '/sales', icon: TrendingUp },
   { name: 'Products', href: '/products', icon: ShoppingBag },
   { name: 'Payments', href: '/payments', icon: CreditCard },
   { name: 'Returns', href: '/returns', icon: RefreshCw },

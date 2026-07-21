@@ -8,6 +8,8 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 // Fully functional Local Storage-based mock database for seamless offline/standalone support
 class LocalDbService {
+  private syncTimers: Record<string, NodeJS.Timeout> = {};
+
   private getStorageItem<T>(key: string, defaultValue: T): T {
     if (typeof window === 'undefined') return defaultValue;
     const data = localStorage.getItem(`hetvi_db_${key}`);
@@ -18,24 +20,39 @@ class LocalDbService {
     if (typeof window === 'undefined') return;
     localStorage.setItem(`hetvi_db_${key}`, JSON.stringify(value));
     
-    // Auto-sync to Supabase if config is present
-    if (supabaseUrl && supabaseAnonKey && supabase && key !== 'session') {
-      supabase
-        .from('sync_data')
-        .upsert({ id: key, data: value, updated_at: new Date().toISOString() })
-        .then(({ error }) => {
-          if (error) console.error(`Failed to sync ${key} to Supabase:`, error);
-        });
+    // Skip syncing session or rapid local audit logs to cloud
+    if (key === 'session' || key === 'notifications') return;
+
+    // Debounce cloud sync to prevent Firestore 'Write stream exhausted' rate limit errors
+    if (this.syncTimers[key]) {
+      clearTimeout(this.syncTimers[key]);
     }
 
-    // Auto-sync to Firebase Firestore if config is present
-    if (db && key !== 'session') {
-      setDoc(doc(db, 'sync_data', key), {
-        id: key,
-        data: value,
-        updated_at: new Date().toISOString()
-      }).catch(err => console.error(`Failed to sync ${key} to Firebase Firestore:`, err));
-    }
+    this.syncTimers[key] = setTimeout(() => {
+      // Auto-sync to Supabase if config is present
+      if (supabaseUrl && supabaseAnonKey && supabase) {
+        supabase
+          .from('sync_data')
+          .upsert({ id: key, data: value, updated_at: new Date().toISOString() })
+          .then(({ error }) => {
+            if (error) console.error(`Failed to sync ${key} to Supabase:`, error);
+          });
+      }
+
+      // Auto-sync to Firebase Firestore if config is present
+      if (db) {
+        setDoc(doc(db, 'sync_data', key), {
+          id: key,
+          data: value,
+          updated_at: new Date().toISOString()
+        }).catch(err => {
+          // Gracefully suppress queue limit errors without breaking local app state
+          if (!err?.message?.includes('resource-exhausted') && !err?.message?.includes('Write stream exhausted')) {
+            console.warn(`Firestore sync note for ${key}:`, err?.message || err);
+          }
+        });
+      }
+    }, 500); // 500ms debounce buffer
   }
 
   // Push single table to cloud database
