@@ -139,68 +139,63 @@ export default function SalesPage() {
         </button>
       </div>
 
-      {/* 3 Main Summary Cards - Using Brand Color Tokens */}
+      {/* 3 Main Summary Cards - Identical to Dashboard Stat Blocks */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Card 1: Total Earned */}
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/70 dark:bg-emerald-950/30 p-5 shadow-xs"
+          whileHover={{ y: -3, borderColor: '#C98678', boxShadow: '0 4px 12px rgba(201,134,120,0.12)' }}
+          className="p-4 rounded-xl bg-card border border-border shadow-sm flex flex-col justify-between transition-all duration-300 min-h-[100px]"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
               Total Earned (Sales)
             </span>
-            <div className="rounded-xl bg-emerald-100 dark:bg-emerald-900/60 p-2 text-emerald-700 dark:text-emerald-300">
-              <TrendingUp className="h-5 w-5" />
+            <div className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
+              <TrendingUp className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-3 font-serif text-2xl md:text-3xl font-bold text-emerald-950 dark:text-emerald-100">
+          <h3 className="font-serif font-extrabold text-xl text-primary mt-2">
             ₹{totalSales.toLocaleString('en-IN')}
-          </div>
-          <div className="mt-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+          </h3>
+          <span className="text-[10px] text-muted-foreground font-medium mt-1">
             Sum of all invoice items (Quantity × Rate)
-          </div>
+          </span>
         </motion.div>
 
         {/* Card 2: Total Spent */}
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="rounded-2xl border border-rose-200 dark:border-rose-800/60 bg-rose-50/70 dark:bg-rose-950/30 p-5 shadow-xs"
+          whileHover={{ y: -3, borderColor: '#C98678', boxShadow: '0 4px 12px rgba(201,134,120,0.12)' }}
+          className="p-4 rounded-xl bg-card border border-border shadow-sm flex flex-col justify-between transition-all duration-300 min-h-[100px]"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-rose-800 dark:text-rose-300">
+            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
               Total Spent (Expenses)
             </span>
-            <div className="rounded-xl bg-rose-100 dark:bg-rose-900/60 p-2 text-rose-700 dark:text-rose-300">
-              <TrendingDown className="h-5 w-5" />
+            <div className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400">
+              <TrendingDown className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-3 font-serif text-2xl md:text-3xl font-bold text-rose-950 dark:text-rose-100">
+          <h3 className="font-serif font-extrabold text-xl text-rose-600 dark:text-rose-400 mt-2">
             ₹{totalSpent.toLocaleString('en-IN')}
-          </div>
+          </h3>
         </motion.div>
 
         {/* Card 3: Net Amount (Profit) */}
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="rounded-2xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/70 dark:bg-amber-950/30 p-5 shadow-xs"
+          whileHover={{ y: -3, borderColor: '#C98678', boxShadow: '0 4px 12px rgba(201,134,120,0.12)' }}
+          className="p-4 rounded-xl bg-card border border-border shadow-sm flex flex-col justify-between transition-all duration-300 min-h-[100px]"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-amber-800 dark:text-amber-300">
+            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
               Net Amount (Earned - Spent)
             </span>
-            <div className="rounded-xl bg-amber-100 dark:bg-amber-900/60 p-2 text-amber-700 dark:text-amber-300">
-              <DollarSign className="h-5 w-5" />
+            <div className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400">
+              <DollarSign className="h-4 w-4" />
             </div>
           </div>
-          <div className={`mt-3 font-serif text-2xl md:text-3xl font-bold ${netEarnings >= 0 ? 'text-amber-950 dark:text-amber-100' : 'text-rose-700'}`}>
+          <h3 className={`font-serif font-extrabold text-xl mt-2 ${netEarnings >= 0 ? 'text-primary' : 'text-rose-600'}`}>
             ₹{netEarnings.toLocaleString('en-IN')}
-          </div>
+          </h3>
         </motion.div>
       </div>
 
